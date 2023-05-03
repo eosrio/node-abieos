@@ -10,7 +10,7 @@
     "tsc:watch": "tsc --watch",
     "build:linux": "cmake-js compile --cc /usr/bin/clang --cxx /usr/bin/clang++ && cp build/Release/node_abieos.node dist/abieos.node",
     "build:win": "cmake-js",
-    "build:deno": "build:linux && npx denoify --src lib --out deno_dist",
+    "build:deno": "npx denoify --src lib --out deno_dist"
   },
   "type": "module",
   "repository": {
