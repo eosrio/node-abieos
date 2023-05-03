@@ -6,8 +6,10 @@ if (import.meta.url.startsWith('file://')) {
     modulePath = `../dist/abieos.node`;
 } else {
     metaUrl = `file://${Deno.cwd()}`;
-    modulePath = `./bin/abieos.node`;
+    modulePath = `../bin/abieos.node`;
 }
+console.log('metaUrl', metaUrl);
+console.log('modulePath', modulePath);
 const require = createRequire(metaUrl);
 let abieos = require(modulePath);
 export class Abieos {
