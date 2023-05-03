@@ -1,4 +1,4 @@
-import { createRequire } from 'node:module';
+import { createRequire } from "https://deno.land/std@0.107.0/node/module.ts"
 let modulePath = '';
 let metaUrl = '';
 if (import.meta.url.startsWith('file://')) {
@@ -7,8 +7,19 @@ if (import.meta.url.startsWith('file://')) {
 } else {
     metaUrl = `${Deno.mainModule}`;
     modulePath = `../../bin/abieos.node`;
+
+const paths = ['abieos.node', '../abieos.node', '../../abieos.node', '../../bin/abieos.node', '../bin/abieos.node', './bin/abieos.node'];
+for (const maybePath of paths) {
+    try {
+        require(maybePath);
+        modulePath = maybePath;
+        console.log('gotcha', maybePath)
+        break;
+    } catch (e) {
+        console.log('wrong', e);
+    }
 }
-console.log("it", metaUrl, modulePath);
+}
 const require = createRequire(metaUrl);
 let abieos = require(modulePath);
 export class Abieos {
