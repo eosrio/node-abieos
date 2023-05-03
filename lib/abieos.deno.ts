@@ -1,8 +1,7 @@
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 let modulePath = "../dist/abieos.node";
-let abieos = null;
-   abieos = require(modulePath);
+let abieos = require(modulePath);
 export class Abieos {
     constructor() {
         Abieos.native = abieos;

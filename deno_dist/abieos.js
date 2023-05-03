@@ -1,4 +1,4 @@
-import { createRequire } from 'node:module';
+import { createRequire } from 'node:node:module';
 const require = createRequire(import.meta.url);
 let modulePath = "../dist/abieos.node";
 let abieos = null;

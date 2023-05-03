@@ -9,7 +9,8 @@
     "test": "cd examples && node basic.js",
     "tsc:watch": "tsc --watch",
     "build:linux": "cmake-js compile --cc /usr/bin/clang --cxx /usr/bin/clang++ && cp build/Release/node_abieos.node dist/abieos.node",
-    "build:win": "cmake-js"
+    "build:win": "cmake-js",
+    "build:deno": "build:linux && npx denoify --src lib --out deno_dist",
   },
   "type": "module",
   "repository": {
@@ -23,10 +24,11 @@
   },
   "homepage": "https://github.com/eosrio/node-abieos#readme",
   "devDependencies": {
-    "node-addon-api": "^5.0.0",
-    "cmake-js": "^7.0.0",
     "@types/node": "^18.11.13",
-    "typescript": "^4.9.4"
+    "cmake-js": "^7.0.0",
+    "node-addon-api": "^5.0.0",
+    "typescript": "^4.9.4",
+    "denoify": "^1.5.3"
   },
   "cmake-js": {
     "runtime": "node",
