@@ -5,7 +5,7 @@ if (import.meta.url.startsWith('file://')) {
     metaUrl = `${import.meta.url}`;
     modulePath = `../dist/abieos.node`;
 } else {
-    metaUrl = `file://${Deno.cwd()}`;
+    metaUrl = `${Deno.mainModule()}`;
     modulePath = `abieos.node`;
 }
 console.log("it", metaUrl, modulePath);
