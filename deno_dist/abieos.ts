@@ -1,5 +1,6 @@
 import { createRequire } from 'node:module';
 const metaUrl = `file://${Deno.cwd()}/lib/abieos.deno.ts`;
+console.log('metaUrl', metaUrl)
 const require = createRequire(metaUrl);
 let modulePath = "../dist/abieos.node";
 let abieos = require(modulePath);
