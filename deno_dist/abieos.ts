@@ -1,5 +1,5 @@
 import { createRequire } from 'node:module';
-const require = createRequire(".");
+const require = createRequire(Deno.cwd());
 let modulePath = "../dist/abieos.node";
 let abieos = require(modulePath);
 export class Abieos {
