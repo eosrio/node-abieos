@@ -1,1 +1,1 @@
-export * from "./abieos.ts";
+export * from "./abieos";
