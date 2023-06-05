@@ -8,7 +8,7 @@
     "install": "node -e 'process.exit(0)'",
     "test": "cd examples && node basic.js",
     "tsc:watch": "tsc --watch",
-    "build:linux": "cmake-js compile --cc /usr/bin/clang --cxx /usr/bin/clang++ && cp build/Release/node_abieos.node dist/abieos.node",
+    "build:linux": "cmake-js compile --cc /usr/bin/clang --cxx /usr/bin/clang++ && cp build/Release/deno_abieos.so dist/abieos.so",
     "build:win": "cmake-js",
     "build:deno": "npx denoify --src lib --out deno_dist"
   },
