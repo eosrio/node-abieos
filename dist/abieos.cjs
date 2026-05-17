@@ -30,7 +30,25 @@ var importMetaUrl = /* @__PURE__ */ getImportMetaUrl();
 
 // lib/abieos.ts
 var import_node_module = require("module");
-var abieos = (0, import_node_module.createRequire)(importMetaUrl)("./abieos.node");
+var require2 = (0, import_node_module.createRequire)(importMetaUrl);
+function loadNative() {
+  const candidates = [
+    `./abieos-${process.platform}-${process.arch}.node`,
+    "./abieos.node"
+  ];
+  let lastError;
+  for (const candidate of candidates) {
+    try {
+      return require2(candidate);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw new Error(
+    `[node-abieos] No native binary for ${process.platform}-${process.arch}. Tried: ${candidates.join(", ")}. Build from source (npm run build:${process.platform === "win32" ? "win" : process.platform === "darwin" ? "mac" : "linux"}) or file an issue. Last error: ${lastError?.message ?? lastError}`
+  );
+}
+var abieos = loadNative();
 var Abieos = class _Abieos {
   static logTag = "[node-abieos]";
   static instance;

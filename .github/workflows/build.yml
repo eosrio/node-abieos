@@ -58,6 +58,14 @@ jobs:
     - name: Run tests
       run: npm test
 
+    - name: Upload linux-x64 prebuilt
+      if: matrix.node-version == '24.x'
+      uses: actions/upload-artifact@v4
+      with:
+        name: abieos-linux-x64
+        path: lib/abieos-linux-x64.node
+        if-no-files-found: error
+
     - name: Run coverage tests
       if: matrix.node-version == '22.x'
       run: npm run test:coverage
@@ -127,6 +135,111 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: build-logs-bun
+        path: |
+          build/**/*.log
+        if-no-files-found: ignore
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup MSYS2 (MinGW-w64)
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        update: false
+        install: >-
+          mingw-w64-x86_64-gcc
+          mingw-w64-x86_64-ninja
+
+    - name: Put MinGW-w64 on PATH
+      shell: msys2 {0}
+      run: echo "$(cygpath -w /mingw64/bin)" >> "$GITHUB_PATH"
+
+    - name: Use Node.js 24.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 24.x
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build Windows native module (MinGW-w64)
+      run: npm run build:win
+
+    - name: Build TypeScript
+      run: npm run build
+
+    - name: Run tests
+      run: npm test
+
+    - name: Upload win32-x64 prebuilt
+      uses: actions/upload-artifact@v4
+      with:
+        name: abieos-win32-x64
+        path: lib/abieos-win32-x64.node
+        if-no-files-found: error
+
+    - name: Upload build logs on failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-logs-windows
+        path: |
+          build/**/*.log
+        if-no-files-found: ignore
+
+  build-macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-14
+            arch: arm64
+          - runner: macos-13
+            arch: x64
+    runs-on: ${{ matrix.runner }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Use Node.js 24.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 24.x
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build macOS native module
+      run: npm run build:mac
+
+    - name: Build TypeScript
+      run: npm run build
+
+    - name: Run tests
+      run: npm test
+
+    - name: Upload darwin-${{ matrix.arch }} prebuilt
+      uses: actions/upload-artifact@v4
+      with:
+        name: abieos-darwin-${{ matrix.arch }}
+        path: lib/abieos-darwin-${{ matrix.arch }}.node
+        if-no-files-found: error
+
+    - name: Upload build logs on failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-logs-macos-${{ matrix.arch }}
         path: |
           build/**/*.log
         if-no-files-found: ignore
