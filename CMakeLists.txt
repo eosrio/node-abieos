@@ -88,10 +88,13 @@ if(WIN32 AND CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     "${CMAKE_CURRENT_SOURCE_DIR}/src/win_delay_load_hook.cc")
   # Link the delay-import lib + binutils' delay-load helper (libdelayimp,
   # provides __delayLoadHelper2), in that order. Drop the missing MSVC
-  # node.lib and the MSVC-only /DELAYLOAD flag (g++ would treat
-  # "/DELAYLOAD:NODE.EXE" as an input file).
+  # node.lib and strip only the MSVC-only /DELAYLOAD token cmake-js injects
+  # (g++ would treat "/DELAYLOAD:NODE.EXE" as an input file) — keep any
+  # other shared-linker flags from toolchains/presets/LDFLAGS intact.
   set(CMAKE_JS_LIB "${NODE_DELAYLIB};delayimp")
-  set(CMAKE_SHARED_LINKER_FLAGS "")
+  string(REGEX REPLACE "/DELAYLOAD:[^ \t]*" ""
+         CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
+  string(STRIP "${CMAKE_SHARED_LINKER_FLAGS}" CMAKE_SHARED_LINKER_FLAGS)
 endif()
 
 target_link_libraries(${PROJECT_NAME} ${CMAKE_JS_LIB};abieos;${CMAKE_THREAD_LIBS_INIT})

@@ -1,38 +1,52 @@
 import { createRequire } from "node:module";
 
-const require = createRequire(import.meta.url);
+const nativeRequire = createRequire(import.meta.url);
 
 /**
- * Resolve the native addon for the current platform/arch.
+ * Resolve the native abieos addon for a given platform/arch.
  *
- * The npm package bundles a prebuilt binary per platform named
- * `abieos-<platform>-<arch>.node` (e.g. `abieos-win32-x64.node`). A
- * source build (npm run build:linux|win|mac) also writes the generic
- * `abieos.node`, which is the fallback — so this works for both the
- * prebuilt distribution and a from-source build.
+ * The npm package bundles a prebuilt binary per platform
+ * (`abieos-<platform>-<arch>.node`); a source build also writes the
+ * generic `abieos.node`. Both the published (`dist/`) and the source
+ * (`lib/`) layouts are searched, so this works for the prebuilt
+ * distribution and a from-source build alike.
+ *
+ * Exported for testing and to let advanced consumers override binary
+ * resolution; normal use never needs to call this directly.
+ *
+ * @param req - a CommonJS-style `require` (defaults to one bound to this module)
+ * @param platform - target platform (defaults to `process.platform`)
+ * @param arch - target architecture (defaults to `process.arch`)
  */
-function loadNative() {
+export function resolveNative(
+    req: (id: string) => any = nativeRequire,
+    platform: string = process.platform,
+    arch: string = process.arch,
+): any {
     const candidates = [
-        `./abieos-${process.platform}-${process.arch}.node`,
+        `./abieos-${platform}-${arch}.node`,
         './abieos.node',
+        `../lib/abieos-${platform}-${arch}.node`,
+        '../lib/abieos.node',
     ];
     let lastError: unknown;
     for (const candidate of candidates) {
         try {
-            return require(candidate);
+            return req(candidate);
         } catch (error) {
             lastError = error;
         }
     }
+    const buildScript = platform === 'win32' ? 'win' : platform === 'darwin' ? 'mac' : 'linux';
     throw new Error(
-        `[node-abieos] No native binary for ${process.platform}-${process.arch}. ` +
+        `[node-abieos] No native binary for ${platform}-${arch}. ` +
         `Tried: ${candidates.join(', ')}. ` +
-        `Build from source (npm run build:${process.platform === 'win32' ? 'win' : process.platform === 'darwin' ? 'mac' : 'linux'}) ` +
-        `or file an issue. Last error: ${(lastError as Error)?.message ?? lastError}`
+        `Build from source (npm run build:${buildScript}) or file an issue. ` +
+        `Last error: ${(lastError as Error)?.message ?? lastError}`
     );
 }
 
-const abieos = loadNative();
+const abieos = resolveNative();
 
 /**
  * Abieos class provides a singleton instance for interacting with the native abieos module.
