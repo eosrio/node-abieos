@@ -1,6 +1,27 @@
 // lib/abieos.ts
 import { createRequire } from "module";
-var abieos = createRequire(import.meta.url)("./abieos.node");
+var nativeRequire = createRequire(import.meta.url);
+function resolveNative(req = nativeRequire, platform = process.platform, arch = process.arch) {
+  const candidates = [
+    `./abieos-${platform}-${arch}.node`,
+    "./abieos.node",
+    `../lib/abieos-${platform}-${arch}.node`,
+    "../lib/abieos.node"
+  ];
+  let lastError;
+  for (const candidate of candidates) {
+    try {
+      return req(candidate);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  const buildScript = platform === "win32" ? "win" : platform === "darwin" ? "mac" : "linux";
+  throw new Error(
+    `[node-abieos] No native binary for ${platform}-${arch}. Tried: ${candidates.join(", ")}. Build from source (npm run build:${buildScript}) or file an issue. Last error: ${lastError?.message ?? lastError}`
+  );
+}
+var abieos = resolveNative();
 var Abieos = class _Abieos {
   static logTag = "[node-abieos]";
   static instance;
@@ -226,5 +247,6 @@ var Abieos = class _Abieos {
   }
 };
 export {
-  Abieos
+  Abieos,
+  resolveNative
 };

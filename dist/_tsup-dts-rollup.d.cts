@@ -102,4 +102,22 @@ export declare class Abieos {
 
 declare const abieos: any;
 
+/**
+ * Resolve the native abieos addon for a given platform/arch.
+ *
+ * The npm package bundles a prebuilt binary per platform
+ * (`abieos-<platform>-<arch>.node`); a source build also writes the
+ * generic `abieos.node`. Both the published (`dist/`) and the source
+ * (`lib/`) layouts are searched, so this works for the prebuilt
+ * distribution and a from-source build alike.
+ *
+ * Exported for testing and to let advanced consumers override binary
+ * resolution; normal use never needs to call this directly.
+ *
+ * @param req - a CommonJS-style `require` (defaults to one bound to this module)
+ * @param platform - target platform (defaults to `process.platform`)
+ * @param arch - target architecture (defaults to `process.arch`)
+ */
+export declare function resolveNative(req?: (id: string) => any, platform?: string, arch?: string): any;
+
 export { }

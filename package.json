@@ -1,6 +1,6 @@
 {
   "name": "@eosrio/node-abieos",
-  "version": "4.1.1-f7d5b45",
+  "version": "4.2.0-f7d5b45",
   "publishConfig": {
     "access": "public",
     "tag": "latest"
@@ -25,8 +25,8 @@
     "test:watch": "node --test --watch --experimental-test-coverage test/**/*.test.js",
     "tsc:watch": "tsc --watch",
     "clean": "cmake-js clean",
-    "build:win": "cmake-js",
-    "build:mac": "cmake-js",
+    "build:win": "cmake-js compile -G Ninja && node scripts/copy-module.mjs",
+    "build:mac": "cmake-js compile && node scripts/copy-module.mjs",
     "update_version": "node scripts/update-version.mjs"
   },
   "repository": {

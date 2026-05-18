@@ -20,7 +20,8 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // lib/abieos.ts
 var abieos_exports = {};
 __export(abieos_exports, {
-  Abieos: () => Abieos
+  Abieos: () => Abieos,
+  resolveNative: () => resolveNative
 });
 module.exports = __toCommonJS(abieos_exports);
 
@@ -30,7 +31,28 @@ var importMetaUrl = /* @__PURE__ */ getImportMetaUrl();
 
 // lib/abieos.ts
 var import_node_module = require("module");
-var abieos = (0, import_node_module.createRequire)(importMetaUrl)("./abieos.node");
+var nativeRequire = (0, import_node_module.createRequire)(importMetaUrl);
+function resolveNative(req = nativeRequire, platform = process.platform, arch = process.arch) {
+  const candidates = [
+    `./abieos-${platform}-${arch}.node`,
+    "./abieos.node",
+    `../lib/abieos-${platform}-${arch}.node`,
+    "../lib/abieos.node"
+  ];
+  let lastError;
+  for (const candidate of candidates) {
+    try {
+      return req(candidate);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  const buildScript = platform === "win32" ? "win" : platform === "darwin" ? "mac" : "linux";
+  throw new Error(
+    `[node-abieos] No native binary for ${platform}-${arch}. Tried: ${candidates.join(", ")}. Build from source (npm run build:${buildScript}) or file an issue. Last error: ${lastError?.message ?? lastError}`
+  );
+}
+var abieos = resolveNative();
 var Abieos = class _Abieos {
   static logTag = "[node-abieos]";
   static instance;
@@ -257,5 +279,6 @@ var Abieos = class _Abieos {
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  Abieos
+  Abieos,
+  resolveNative
 });
