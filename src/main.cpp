@@ -157,14 +157,33 @@ Napi::String HexToJsonWrapped(const Napi::CallbackInfo &info)
 Napi::String BinToJsonWrapped(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
-    if (info.Length() < 3 || !info[0].IsString() || !info[1].IsString() || !info[2].IsBuffer()) {
-        Napi::TypeError::New(env, "Expected two string arguments and one buffer: contractName, type, buffer").ThrowAsJavaScriptException();
+    // Accept any Uint8Array (a Node Buffer is a Uint8Array). The TypeScript
+    // signature is `Uint8Array`, so the native side must accept a plain
+    // Uint8Array too — not only a Buffer — otherwise the type would lie.
+    if (info.Length() < 3 || !info[0].IsString() || !info[1].IsString() ||
+        !(info[2].IsBuffer() || info[2].IsTypedArray())) {
+        Napi::TypeError::New(env, "Expected (string contractName, string type, Uint8Array|Buffer data)").ThrowAsJavaScriptException();
         return env.Null().As<Napi::String>();
     }
     std::string contract_name = info[0].As<Napi::String>().Utf8Value();
     std::string type = info[1].As<Napi::String>().Utf8Value();
-    Napi::Buffer<char> buf = info[2].As<Napi::Buffer<char>>();
-    return Napi::String::New(env, bin_to_json(env, contract_name.c_str(), type.c_str(), buf.Data(), buf.Length()));
+
+    const char *bin_data;
+    size_t bin_length;
+    if (info[2].IsBuffer()) {
+        Napi::Buffer<char> buf = info[2].As<Napi::Buffer<char>>();
+        bin_data = buf.Data();
+        bin_length = buf.Length();
+    } else {
+        // Generic typed array: resolve the underlying bytes honouring the
+        // view's byte offset (Node Buffers/Uint8Arrays are often slices of
+        // a shared, pooled ArrayBuffer).
+        Napi::TypedArray ta = info[2].As<Napi::TypedArray>();
+        Napi::ArrayBuffer ab = ta.ArrayBuffer();
+        bin_data = static_cast<const char *>(ab.Data()) + ta.ByteOffset();
+        bin_length = ta.ByteLength();
+    }
+    return Napi::String::New(env, bin_to_json(env, contract_name.c_str(), type.c_str(), bin_data, bin_length));
 }
 
 /**

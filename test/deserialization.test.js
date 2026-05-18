@@ -74,12 +74,12 @@ test.describe('Deserialization (hexTojson)', () => {
         );
     });
 
-    test('binToJson should throw for invalid hex string', () => {
+    test('binToJson should throw when given a string instead of bytes', () => {
         const invalidHex = "thisisnothex";
         assert.throws(
             () => abieos.binToJson(contractAccount, "transfer", invalidHex),
-            (err) => err.message.includes('Expected two string arguments and one buffer'),
-            'Should throw for invalid hex string'
+            (err) => err.message.includes('Uint8Array|Buffer data'),
+            'Should throw when the data argument is not a Uint8Array/Buffer'
         );
     });
 
@@ -118,6 +118,26 @@ test.describe('Deserialization (hexTojson)', () => {
         } finally {
             Abieos.native.bin_to_json = originalBinToJson;
         }
+    });
+
+    test('binToJson should accept a plain Uint8Array, not only a Buffer', () => {
+        // The TS signature is `Uint8Array`; the native side must accept a
+        // plain Uint8Array too (regression: it previously required a Buffer).
+        const bytes = Uint8Array.from(Buffer.from(validHex, 'hex'));
+        assert.equal(bytes instanceof Uint8Array, true);
+        assert.equal(Buffer.isBuffer(bytes), false, 'must be a plain Uint8Array');
+        const json = abieos.binToJson(contractAccount, "transfer", bytes);
+        assert.deepStrictEqual(json, transferActionData);
+    });
+
+    test('binToJson should honour a Uint8Array view byte offset', () => {
+        const raw = Buffer.from(validHex, 'hex');
+        // Place the payload at a non-zero offset inside a larger ArrayBuffer.
+        const backing = new Uint8Array(raw.length + 8);
+        backing.set(raw, 5);
+        const view = new Uint8Array(backing.buffer, 5, raw.length);
+        const json = abieos.binToJson(contractAccount, "transfer", view);
+        assert.deepStrictEqual(json, transferActionData);
     });
 
 });

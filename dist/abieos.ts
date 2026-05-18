@@ -114,14 +114,14 @@ export class Abieos {
     }
 
     /**
-     * Converts a string name to its corresponding 64-bit unsigned integer representation (BigInt).
+     * Converts a string name to its corresponding 64-bit unsigned integer representation.
      * @param {string} nameString The string name to convert.
-     * @returns {BigInt} The BigInt representation of the name.
+     * @returns {bigint} The bigint representation of the name.
      */
-    public stringToName(nameString: string): BigInt {
-        // The native C++ function returns a JavaScript BigInt.
+    public stringToName(nameString: string): bigint {
+        // The native C++ function returns a JavaScript bigint primitive.
         try {
-            return Abieos.native.string_to_name(nameString) as BigInt;
+            return Abieos.native.string_to_name(nameString) as bigint;
         } catch (e: any) {
             throw new Error(`${Abieos.logTag} Failed to convert string to name '${nameString}': ${e.message}`);
         }
@@ -177,11 +177,11 @@ export class Abieos {
      * Converts a binary buffer to its JSON representation.
      * @param {string} contractName The name of the contract.
      * @param {string} type The type within the ABI to use for conversion.
-     * @param {Buffer} buffer The binary data as a Buffer.
+     * @param {Uint8Array} buffer The binary data (a Node `Buffer` is accepted — it is a `Uint8Array`).
      * @returns {any} The parsed JSON object.
      * @throws {Error} If parsing fails or an error occurs in the native module.
      */
-    public binToJson(contractName: string, type: string, buffer: Buffer): any {
+    public binToJson(contractName: string, type: string, buffer: Uint8Array): any {
         try {
             const data = Abieos.native.bin_to_json(contractName, type, buffer) as string;
             // Attempt to parse the string data as JSON.
