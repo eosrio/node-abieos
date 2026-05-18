@@ -8,6 +8,7 @@ scripts
 lib
 docs
 src
+coverage
 
 CMakeLists.txt
 
