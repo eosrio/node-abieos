@@ -19,6 +19,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - `scripts/copy-module.mjs`: deterministically locates the addon across single-config (`build/`) and multi-config (`build/{Release,Debug}/`) generator layouts (no recursive scan — avoids stale binaries), exits non-zero if none is found, and on macOS writes both `abieos-darwin-arm64.node` and `abieos-darwin-x64.node` from the universal2 build.
 - `CMakeLists.txt`: portable `EXISTS` submodule check (replaces Unix-only `git submodule status | grep`); CRLF-robust `node-addon-api` include resolution; strips only the MSVC `/DELAYLOAD:*` token from `CMAKE_SHARED_LINKER_FLAGS` rather than clearing the whole variable.
 
+### Fixed
+- **`stringToName` return type** was `BigInt` (the wrapper object type) instead of `bigint` (the primitive it actually returns) — every TypeScript consumer hit `Type 'BigInt' is not assignable to type 'bigint'`. Now `bigint`.
+- **Self-contained typings:** `binToJson`'s parameter is now `Uint8Array` instead of the ambient Node `Buffer` global (a `Buffer` is a `Uint8Array`, so existing callers are unaffected). The published `.d.ts` no longer depends on `@types/node` and type-checks cleanly under TypeScript's default `skipLibCheck: false` without extra consumer setup. Verified from a clean `npm install` of the packed tarball across Node + Bun (ESM & CJS) and TypeScript (`nodenext`).
+
 ### Notes
 - The `darwin-arm64` / `darwin-x64` prebuilts are the same universal2 binary, committed from the `build-macos` CI artifacts (Mach-O cannot be cross-built from the Linux/Windows dev environments). Their CI provenance is the source of truth.
 - GCC 13 emits one benign `-Wstringop-overflow` warning in the vendored `abieos/include/eosio/bitset.hpp`; it is not an error and does not affect correctness (Linux CI builds with Clang and does not emit it).

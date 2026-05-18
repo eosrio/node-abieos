@@ -27,11 +27,11 @@ export declare class Abieos {
      */
     cleanup(): void;
     /**
-     * Converts a string name to its corresponding 64-bit unsigned integer representation (BigInt).
+     * Converts a string name to its corresponding 64-bit unsigned integer representation.
      * @param {string} nameString The string name to convert.
-     * @returns {BigInt} The BigInt representation of the name.
+     * @returns {bigint} The bigint representation of the name.
      */
-    stringToName(nameString: string): BigInt;
+    stringToName(nameString: string): bigint;
     /**
      * Converts a JSON string or object to its hexadecimal binary representation.
      * @param {string} contractName The name of the contract.
@@ -54,11 +54,11 @@ export declare class Abieos {
      * Converts a binary buffer to its JSON representation.
      * @param {string} contractName The name of the contract.
      * @param {string} type The type within the ABI to use for conversion.
-     * @param {Buffer} buffer The binary data as a Buffer.
+     * @param {Uint8Array} buffer The binary data (a Node `Buffer` is accepted — it is a `Uint8Array`).
      * @returns {any} The parsed JSON object.
      * @throws {Error} If parsing fails or an error occurs in the native module.
      */
-    binToJson(contractName: string, type: string, buffer: Buffer): any;
+    binToJson(contractName: string, type: string, buffer: Uint8Array): any;
     /**
      * Loads an ABI for a given contract.
      * @param {string} contractName The name of the contract for which to load the ABI.
