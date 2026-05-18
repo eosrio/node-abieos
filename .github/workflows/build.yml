@@ -195,15 +195,11 @@ jobs:
         if-no-files-found: ignore
 
   build-macos:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - runner: macos-14
-            arch: arm64
-          - runner: macos-13
-            arch: x64
-    runs-on: ${{ matrix.runner }}
+    # Intel (x64) GitHub runners (macos-13) are being retired and can queue
+    # for hours. We build a single universal2 (arm64 + x86_64) binary on the
+    # reliable Apple-Silicon runner and ship it under both darwin arch names.
+    # CMAKE_OSX_ARCHITECTURES is forced in CMakeLists.txt (ABIEOS_MAC_UNIVERSAL).
+    runs-on: macos-14
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -219,7 +215,7 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    - name: Build macOS native module
+    - name: Build macOS universal2 native module
       run: npm run build:mac
 
     - name: Build TypeScript
@@ -228,18 +224,33 @@ jobs:
     - name: Run tests
       run: npm test
 
-    - name: Upload darwin-${{ matrix.arch }} prebuilt
+    - name: Verify universal2 slices (arm64 + x86_64)
+      run: |
+        file lib/abieos-darwin-arm64.node
+        lipo -archs lib/abieos-darwin-arm64.node
+        lipo -archs lib/abieos-darwin-arm64.node | grep -qw arm64
+        lipo -archs lib/abieos-darwin-arm64.node | grep -qw x86_64
+        cmp lib/abieos-darwin-arm64.node lib/abieos-darwin-x64.node
+
+    - name: Upload darwin-arm64 prebuilt
       uses: actions/upload-artifact@v4
       with:
-        name: abieos-darwin-${{ matrix.arch }}
-        path: lib/abieos-darwin-${{ matrix.arch }}.node
+        name: abieos-darwin-arm64
+        path: lib/abieos-darwin-arm64.node
+        if-no-files-found: error
+
+    - name: Upload darwin-x64 prebuilt
+      uses: actions/upload-artifact@v4
+      with:
+        name: abieos-darwin-x64
+        path: lib/abieos-darwin-x64.node
         if-no-files-found: error
 
     - name: Upload build logs on failure
       if: failure()
       uses: actions/upload-artifact@v4
       with:
-        name: build-logs-macos-${{ matrix.arch }}
+        name: build-logs-macos
         path: |
           build/**/*.log
         if-no-files-found: ignore

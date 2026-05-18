@@ -30,6 +30,16 @@ set(CMAKE_CXX_EXTENSIONS ON)
 option(ABIEOS_NO_INT128 "disable use of __int128" OFF)
 option(ABIEOS_ONLY_LIBRARY "define and build the ABIEOS library" OFF)
 
+# macOS: build a universal2 (arm64 + x86_64) binary so one prebuilt runs on
+# both Apple Silicon and Intel Macs. This lets CI produce the x64 artifact on
+# the reliable Apple-Silicon runner (the Intel macos-13 runner is being
+# retired). FORCE overrides the single-arch value cmake-js injects. Override
+# with -DABIEOS_MAC_UNIVERSAL=OFF for a faster host-only dev build.
+option(ABIEOS_MAC_UNIVERSAL "Build a macOS universal2 (arm64;x86_64) binary" ON)
+if(APPLE AND ABIEOS_MAC_UNIVERSAL)
+  set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "macOS universal2" FORCE)
+endif()
+
 if(NOT DEFINED SKIP_SUBMODULE_CHECK)
   # Portable presence check for the actual sources this build compiles.
   # The previous `git submodule status | grep -c` form shelled out to grep,
